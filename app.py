@@ -4,6 +4,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
 import numpy as np
+import collections
 
 st.title("Search Intent Explorer")
 
@@ -49,6 +50,14 @@ def optimal_kmeans(X):
             best_score = score
     return best_k
 
+def generate_cluster_labels(clusters):
+    labels = {}
+    for cluster, terms in clusters.items():
+        common_words = collections.Counter(" ".join(terms).split()).most_common(2)
+        cluster_label = " ".join([word[0] for word in common_words])
+        labels[cluster] = cluster_label
+    return labels
+
 def cluster_suggestions(suggestions):
     vectorizer = TfidfVectorizer(stop_words='english')
     X = vectorizer.fit_transform(suggestions)
@@ -63,16 +72,17 @@ def cluster_suggestions(suggestions):
             clusters[label] = []
         clusters[label].append(suggestions[i])
     
-    return clusters
+    cluster_labels = generate_cluster_labels(clusters)
+    return clusters, cluster_labels
 
 if st.button("Get Suggestions"):
     if seed_keyword:
         suggestions = expand_suggestions(seed_keyword, country, language)
         if suggestions:
-            clusters = cluster_suggestions(suggestions)
+            clusters, cluster_labels = cluster_suggestions(suggestions)
             st.write("### Clustered Google Auto Suggest Results:")
             for cluster, items in clusters.items():
-                st.write(f"#### Cluster {cluster+1}:")
+                st.write(f"#### {cluster_labels[cluster].title()}")
                 for item in items:
                     st.write(f"- {item}")
         else:
