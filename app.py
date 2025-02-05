@@ -13,13 +13,29 @@ def get_google_suggestions(keyword, country, language):
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language}&gl={country}"
     response = requests.get(url)
     if response.status_code == 200:
-        suggestions = response.json()[1]
-        return suggestions
+        return response.json()[1]
     return []
+
+def expand_suggestions(seed_keyword, country, language):
+    suggestions = set()
+    level_1 = get_google_suggestions(seed_keyword, country, language)[:10]
+    suggestions.update(level_1)
+    
+    level_2 = []
+    for kw in level_1:
+        level_2.extend(get_google_suggestions(kw, country, language)[:10])
+    suggestions.update(level_2)
+    
+    level_3 = []
+    for kw in level_2:
+        level_3.extend(get_google_suggestions(kw, country, language)[:10])
+    suggestions.update(level_3)
+    
+    return list(suggestions)
 
 if st.button("Get Suggestions"):
     if seed_keyword:
-        suggestions = get_google_suggestions(seed_keyword, country, language)
+        suggestions = expand_suggestions(seed_keyword, country, language)
         if suggestions:
             st.write("### Google Auto Suggest Results:")
             for suggestion in suggestions:
