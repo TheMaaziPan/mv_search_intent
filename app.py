@@ -33,13 +33,31 @@ def expand_suggestions(seed_keyword, country, language):
     
     return list(suggestions)
 
+def cluster_suggestions(suggestions, num_clusters=5):
+    vectorizer = TfidfVectorizer(stop_words='english')
+    X = vectorizer.fit_transform(suggestions)
+    
+    kmeans = KMeans(n_clusters=num_clusters, random_state=42, n_init=10)
+    kmeans.fit(X)
+    
+    clusters = {}
+    for i, label in enumerate(kmeans.labels_):
+        if label not in clusters:
+            clusters[label] = []
+        clusters[label].append(suggestions[i])
+    
+    return clusters
+
 if st.button("Get Suggestions"):
     if seed_keyword:
         suggestions = expand_suggestions(seed_keyword, country, language)
         if suggestions:
-            st.write("### Google Auto Suggest Results:")
-            for suggestion in suggestions:
-                st.write(f"- {suggestion}")
+            clusters = cluster_suggestions(suggestions)
+            st.write("### Clustered Google Auto Suggest Results:")
+            for cluster, items in clusters.items():
+                st.write(f"#### Cluster {cluster+1}:")
+                for item in items:
+                    st.write(f"- {item}")
         else:
             st.write("No suggestions found.")
     else:
