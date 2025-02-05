@@ -4,3 +4,4 @@ numpy
 sentence-transformers
 plotly-express
 plotly
+xlsxwriter
