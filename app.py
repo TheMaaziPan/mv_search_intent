@@ -22,8 +22,21 @@ def get_google_suggestions(keyword, country, language):
         return response.json()[1]
     return []
 
+# Function to generate additional keyword suggestions based on modifiers
+def get_modifier_suggestions(keyword):
+    alphabet_modifiers = [f"{keyword} {chr(i)}" for i in range(97, 123)]  # 'a' to 'z'
+    number_modifiers = [f"{keyword} {i}" for i in range(1, 21)]  # Numbers 1 to 20
+    question_modifiers = [
+        f"how to {keyword}", f"what is {keyword}", f"why is {keyword}",
+        f"can I {keyword}", f"where to buy {keyword}"
+    ]
+    
+    return alphabet_modifiers + number_modifiers + question_modifiers
+
 def expand_suggestions(seed_keyword, country, language):
     suggestions = set()
+    
+    # Get initial 3-level deep suggestions
     level_1 = get_google_suggestions(seed_keyword, country, language)[:10]
     suggestions.update(level_1)
     
@@ -37,7 +50,13 @@ def expand_suggestions(seed_keyword, country, language):
         level_3.extend(get_google_suggestions(kw, country, language)[:10])
     suggestions.update(level_3)
     
+    # Get suggestions for alphabet, number, and question modifiers
+    modifier_suggestions = get_modifier_suggestions(seed_keyword)
+    for modifier in modifier_suggestions:
+        suggestions.update(get_google_suggestions(modifier, country, language)[:5])  # Limit number of results for modifiers
+    
     return list(suggestions)
+
 
 # Load pre-trained sentence transformer model
 model = SentenceTransformer('all-MiniLM-L6-v2')
