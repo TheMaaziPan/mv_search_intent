@@ -4,6 +4,7 @@ import numpy as np
 import collections
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
+from sklearn.metrics.pairwise import cosine_similarity
 
 st.title("Search Intent Explorer")
 
@@ -50,25 +51,27 @@ def cluster_suggestions(suggestions):
             clusters[label] = []
         clusters[label].append(suggestions[i])
     
-    return clusters
+    return clusters, embeddings
 
-def generate_cluster_labels(clusters):
+def generate_cluster_labels(clusters, embeddings, suggestions):
     labels = {}
     for cluster, terms in clusters.items():
-        common_words = collections.Counter(" ".join(terms).split()).most_common(2)
-        cluster_label = " ".join([word[0] for word in common_words])
-        labels[cluster] = cluster_label
+        term_embeddings = [embeddings[suggestions.index(term)] for term in terms]
+        centroid = np.mean(term_embeddings, axis=0).reshape(1, -1)
+        similarities = cosine_similarity(centroid, term_embeddings)[0]
+        best_match_index = np.argmax(similarities)
+        labels[cluster] = f"Cluster about: {terms[best_match_index]}"
     return labels
 
 if st.button("Get Suggestions"):
     if seed_keyword:
         suggestions = expand_suggestions(seed_keyword, country, language)
         if suggestions:
-            clusters = cluster_suggestions(suggestions)
-            cluster_labels = generate_cluster_labels(clusters)
+            clusters, embeddings = cluster_suggestions(suggestions)
+            cluster_labels = generate_cluster_labels(clusters, embeddings, suggestions)
             st.write("### Clustered Google Auto Suggest Results:")
             for cluster, items in clusters.items():
-                st.write(f"#### {cluster_labels[cluster].title()}")
+                st.write(f"#### {cluster_labels[cluster]}")
                 for item in items:
                     st.write(f"- {item}")
         else:
