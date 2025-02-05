@@ -1,3 +1,3 @@
-import streatmlit as st
+import streamlit as st
 
 st.title('Search Intent Explorer')
