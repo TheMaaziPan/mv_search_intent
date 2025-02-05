@@ -70,7 +70,7 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def cluster_suggestions(suggestions):
     embeddings = model.encode(suggestions)
-    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=1.0).fit(embeddings)
+    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=0.5).fit(embeddings)
     
     clusters = {}
     for i, label in enumerate(clustering.labels_):
