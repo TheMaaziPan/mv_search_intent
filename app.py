@@ -2,6 +2,7 @@ import streamlit as st
 import requests
 import numpy as np
 import collections
+import plotly.express as px
 from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
@@ -60,8 +61,17 @@ def generate_cluster_labels(clusters, embeddings, suggestions):
         centroid = np.mean(term_embeddings, axis=0).reshape(1, -1)
         similarities = cosine_similarity(centroid, term_embeddings)[0]
         best_match_index = np.argmax(similarities)
-        labels[cluster] = f"Cluster about: {terms[best_match_index]}"
+        labels[cluster] = terms[best_match_index]
     return labels
+
+def visualize_clusters(clusters, cluster_labels):
+    data = []
+    for cluster, items in clusters.items():
+        for item in items:
+            data.append({"Cluster": cluster_labels[cluster], "Keyword": item})
+    df = px.data.tips()
+    fig = px.treemap(data, path=["Cluster", "Keyword"], title="Keyword Clusters")
+    st.plotly_chart(fig)
 
 if st.button("Get Suggestions"):
     if seed_keyword:
@@ -70,10 +80,7 @@ if st.button("Get Suggestions"):
             clusters, embeddings = cluster_suggestions(suggestions)
             cluster_labels = generate_cluster_labels(clusters, embeddings, suggestions)
             st.write("### Clustered Google Auto Suggest Results:")
-            for cluster, items in clusters.items():
-                st.write(f"#### {cluster_labels[cluster]}")
-                for item in items:
-                    st.write(f"- {item}")
+            visualize_clusters(clusters, cluster_labels)
         else:
             st.write("No suggestions found.")
     else:
