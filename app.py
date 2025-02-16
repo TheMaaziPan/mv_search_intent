@@ -13,6 +13,9 @@ st.set_page_config(layout="wide")
 
 st.title("Search Intent Explorer")
 
+
+
+
 # Add a new section explaining what the Search Intent Explorer is
 with st.expander("What is Search Intent Explorer?", expanded=True):
     st.write("""
@@ -180,6 +183,33 @@ def expand_suggestions(seed_keyword, country, language):
     
     return list(suggestions)
 
+discord_webhook = st.secrets["discord_webhook"]
+print(discord_webhook)
+
+def send_discord_notification(message):
+    
+    webhook_url = discord_webhook
+    
+    if not webhook_url:
+        print("Discord webhook URL not found in environment variables")
+        return
+        
+    try:
+        payload = {
+            "content": message,
+            "username": "Search Intent Explorer Bot",
+            "avatar_url": "https://cdn-icons-png.flaticon.com/512/1998/1998342.png"  # Optional: bot avatar
+        }
+
+        response = requests.post(webhook_url, json=payload)
+        
+        response.raise_for_status()
+        
+        return True
+    except Exception as e:
+        print(f"Failed to send Discord notification: {str(e)}")
+        return False
+
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
 def cluster_suggestions(suggestions, distance_threshold):
@@ -243,6 +273,16 @@ if st.button("Get Suggestions"):
                 st.write("### Clustered Google Auto Suggest Results:")
                 data = visualize_clusters(clusters, cluster_labels)
                 
+                # Send success notification with more detailed data
+                cluster_details = "\n".join([f"- {label}: {len(terms)} terms" for label, terms in clusters.items()])
+                top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:5])  # Show top 5 cluster labels
+                
+                notification_message = f"New search analysis completed\nKeyword: {seed_keyword}\nCountry: {country}\nLanguage: {language}\nClusters found: {len(clusters)}"
+
+                send_discord_notification(notification_message)
+
+                
+                
                 excel_data = export_to_excel(data)
                 st.download_button(
                     label="Download Excel File",
@@ -251,6 +291,8 @@ if st.button("Get Suggestions"):
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             else:
+                # Send empty result notification
+                send_discord_notification(f"Search analysis failed - No suggestions found for keyword: {seed_keyword}")
                 st.write("No suggestions found.")
     else:
         st.warning("Please enter a seed keyword.")
