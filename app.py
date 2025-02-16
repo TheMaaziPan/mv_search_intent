@@ -13,16 +13,51 @@ st.set_page_config(layout="wide")
 
 st.title("Search Intent Explorer")
 
-seed_keyword = st.text_input("Enter a seed keyword:")
+# Add a new section explaining what the Search Intent Explorer is
+with st.expander("What is Search Intent Explorer?", expanded=True):
+    st.write("""
+    The Search Intent Explorer is a powerful tool designed to help you understand user search behavior. 
+    By analyzing search queries, it provides insights into what users are looking for, enabling you to create 
+    content that aligns with their intent. This tool can help you identify relevant keywords, develop 
+    content strategies, and improve your website's SEO performance.
+    """)
+
+# Add a new section on how to use the tool
+with st.expander("How to Use It", expanded=True):
+    st.write("""
+    Follow these steps to get started:
+    1. **Enter a Seed Keyword**: Type a keyword that you want to explore.
+    2. **Select a Country and Language**: Choose the relevant country and language for your search.
+    3. **Get Suggestions**: Click the "Get Suggestions" button to fetch related search queries.
+    4. **View Clustered Results**: The tool will display clustered keywords based on user intent.
+    5. **Download Data**: You can download the results in an Excel file for further analysis.
+    """)
+
+# Create a distinct section for input forms
+st.subheader("Search Intent Research Parameters")
+st.markdown("""
+Enter your target keyword and market parameters below to discover high-value search intent patterns 
+and keyword opportunities for your SEO strategy:
+""")
+
+# Input fields for user interaction
+seed_keyword = st.text_input("Enter a seed keyword:", placeholder="e.g., digital marketing")
 country = st.selectbox("Select a country:", ["us", "ca", "gb", "in", "au", "de", "fr", "es", "it", "nl"])
 language = st.selectbox("Select a language:", ["en", "fr", "es", "de", "it", "nl"])  
 
-def get_google_suggestions(keyword, country, language):
+def get_google_suggestions(keyword, country, language, cache={}):
+    # Check if the result is already cached
+    cache_key = (keyword, country, language)
+    if cache_key in cache:
+        return cache[cache_key]
+    
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language}&gl={country}"
     response = requests.get(url)
     if response.status_code == 200:
-        print(response.json()[1])
-        return response.json()[1]
+        suggestions = response.json()[1]
+        # Cache the result
+        cache[cache_key] = suggestions
+        return suggestions
     return []
 
 def get_modifier_suggestions(keyword):
@@ -93,10 +128,11 @@ def generate_cluster_labels(clusters, embeddings, suggestions):
 def visualize_clusters(clusters, cluster_labels):
     data = []
     for cluster, items in clusters.items():
-        for item in items:
-            data.append({"Cluster": cluster_labels[cluster], "Keyword": item})
-    df = px.data.tips()
-    fig = px.treemap(data, path=["Cluster", "Keyword"], title="Keyword Clusters")
+        if len(items) > 1:  # Only include clusters with more than one keyword
+            for item in items:
+                data.append({"Cluster": cluster_labels[cluster], "Keyword": item})
+    # Increase the height of the treemap
+    fig = px.treemap(data, path=["Cluster", "Keyword"], title="Keyword Clusters", height=900)  # Adjust height as needed
     st.plotly_chart(fig)
     return data
 
@@ -107,6 +143,7 @@ def export_to_excel(data):
         df.to_excel(writer, sheet_name='Clustered Keywords', index=False)
     return output.getvalue()
 
+# Button to get suggestions
 if st.button("Get Suggestions"):
     if seed_keyword:
         with st.spinner('Fetching and analyzing suggestions... Please wait.'):
