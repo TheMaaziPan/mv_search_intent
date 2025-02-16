@@ -44,6 +44,14 @@ and keyword opportunities for your SEO strategy:
 seed_keyword = st.text_input("Enter a seed keyword:", placeholder="e.g., digital marketing")
 country = st.selectbox("Select a country:", ["us", "ca", "gb", "in", "au", "de", "fr", "es", "it", "nl"])
 language = st.selectbox("Select a language:", ["en", "fr", "es", "de", "it", "nl"])  
+clustering_threshold = st.slider(
+    "Clustering Tightness (distance threshold)", 
+    min_value=0.1, 
+    max_value=1.5, 
+    value=0.5, 
+    step=0.1,
+    help="Lower values create tighter clusters (more specific groups), higher values create looser clusters (broader groups)"
+)
 
 def get_google_suggestions(keyword, country, language, cache={}):
     # Check if the result is already cached
@@ -62,18 +70,62 @@ def get_google_suggestions(keyword, country, language, cache={}):
 
 def get_modifier_suggestions(keyword):
     alphabet_modifiers = [f"{keyword} {chr(i)}" for i in range(97, 123)]
-    number_modifiers = [f"{keyword} {i}" for i in range(1, 21)]
+    number_modifiers = [f"{keyword} {i}" for i in range(0, 11)]
     question_modifiers = [
-        f"how {keyword}", f"what {keyword}", f"why {keyword}",
-        f"can {keyword}", f"where {keyword}", f"when {keyword}",
-        f"which {keyword}", f"who {keyword}", f"will {keyword}",
-        f"should {keyword}", f"whose {keyword}", f"whom {keyword}",
-        f"is {keyword}", f"are {keyword}", f"does {keyword}",
-        f"do {keyword}", f"was {keyword}", f"were {keyword}",
-        f"has {keyword}", f"have {keyword}", f"had {keyword}",
-        f"may {keyword}", f"might {keyword}", f"must {keyword}",
-        f"shall {keyword}", f"could {keyword}", f"would {keyword}",
-        f"did {keyword}", f"am {keyword}", f"been {keyword}"
+        # How variations
+        f"how to {keyword}", f"how does {keyword}", f"how do {keyword}", 
+        f"how is {keyword}", f"how are {keyword}", f"how much {keyword}",
+        f"how many {keyword}", f"how long {keyword}", f"how often {keyword}",
+        
+        # What variations
+        f"what is {keyword}", f"what are {keyword}", f"what does {keyword}",
+        f"what type of {keyword}", f"what kind of {keyword}", f"what makes {keyword}",
+        f"what if {keyword}", f"what about {keyword}", f"what happened to {keyword}",
+        
+        # Why variations
+        f"why is {keyword}", f"why are {keyword}", f"why does {keyword}",
+        f"why do {keyword}", f"why not {keyword}", f"why use {keyword}",
+        f"why choose {keyword}", f"why buy {keyword}",
+        
+        # Where variations
+        f"where to {keyword}", f"where is {keyword}", f"where are {keyword}",
+        f"where can i {keyword}", f"where does {keyword}", f"where do {keyword}",
+        f"where buy {keyword}", f"where find {keyword}",
+        
+        # When variations
+        f"when to {keyword}", f"when is {keyword}", f"when are {keyword}",
+        f"when does {keyword}", f"when do {keyword}", f"when will {keyword}",
+        f"when can {keyword}", f"when should {keyword}",
+        
+        # Which variations
+        f"which {keyword}", f"which is best {keyword}", f"which are best {keyword}",
+        f"which type of {keyword}", f"which kind of {keyword}",
+        
+        # Who variations
+        f"who is {keyword}", f"who are {keyword}", f"who does {keyword}",
+        f"who can {keyword}", f"who should {keyword}", f"who needs {keyword}",
+        
+        # Can variations
+        f"can {keyword}", f"can i {keyword}", f"can you {keyword}",
+        f"can we {keyword}", f"can it {keyword}", f"can they {keyword}",
+        
+        # Other question starters
+        f"should i {keyword}", f"should you {keyword}", f"should we {keyword}",
+        f"will {keyword}", f"does {keyword}", f"do {keyword}",
+        f"is {keyword}", f"are {keyword}", f"was {keyword}",
+        f"were {keyword}", f"has {keyword}", f"have {keyword}",
+        f"had {keyword}", f"vs {keyword}", f"versus {keyword}",
+        f"or {keyword}", f"and {keyword}", f"without {keyword}",
+        
+        # Action-oriented
+        f"compare {keyword}", f"buy {keyword}", f"sell {keyword}",
+        f"find {keyword}", f"download {keyword}", f"install {keyword}",
+        f"fix {keyword}", f"repair {keyword}", f"solve {keyword}",
+        
+        # Best/Top variations
+        f"best {keyword}", f"top {keyword}", f"cheapest {keyword}",
+        f"fastest {keyword}", f"easiest {keyword}", f"free {keyword}",
+        f"premium {keyword}", f"professional {keyword}", f"alternative {keyword}"
     ]
     return alphabet_modifiers + number_modifiers + question_modifiers
 
@@ -130,9 +182,9 @@ def expand_suggestions(seed_keyword, country, language):
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
 
-def cluster_suggestions(suggestions):
+def cluster_suggestions(suggestions, distance_threshold):
     embeddings = model.encode(suggestions)
-    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=0.5).fit(embeddings)
+    clustering = AgglomerativeClustering(n_clusters=None, distance_threshold=distance_threshold).fit(embeddings)
     
     clusters = {}
     for i, label in enumerate(clustering.labels_):
@@ -158,9 +210,19 @@ def visualize_clusters(clusters, cluster_labels):
         if len(items) > 1:  # Only include clusters with more than one keyword
             for item in items:
                 data.append({"Cluster": cluster_labels[cluster], "Keyword": item})
-    # Increase the height of the treemap
-    fig = px.treemap(data, path=["Cluster", "Keyword"], title="Keyword Clusters", height=900)  # Adjust height as needed
-    st.plotly_chart(fig)
+    
+    # Create a clean and minimal treemap
+    fig = px.treemap(
+        data, 
+        path=["Cluster", "Keyword"],
+        title="Keyword Clusters",
+        height=900,
+        color_discrete_sequence=px.colors.qualitative.Pastel,
+    )
+
+    
+    # Display the plot
+    st.plotly_chart(fig, use_container_width=True)
     return data
 
 def export_to_excel(data):
@@ -176,7 +238,7 @@ if st.button("Get Suggestions"):
         with st.spinner('Fetching and analyzing suggestions... Please wait.'):
             suggestions = expand_suggestions(seed_keyword, country, language)
             if suggestions:
-                clusters, embeddings = cluster_suggestions(suggestions)
+                clusters, embeddings = cluster_suggestions(suggestions, clustering_threshold)
                 cluster_labels = generate_cluster_labels(clusters, embeddings, suggestions)
                 st.write("### Clustered Google Auto Suggest Results:")
                 data = visualize_clusters(clusters, cluster_labels)
