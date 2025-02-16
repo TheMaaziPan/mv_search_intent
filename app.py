@@ -80,24 +80,51 @@ def get_modifier_suggestions(keyword):
 def expand_suggestions(seed_keyword, country, language):
     suggestions = set()
     
+    # Create a placeholder for real-time updates
+    status_placeholder = st.empty()
+    
+    # Level 1
+    status_placeholder.write("🔍 Fetching first level suggestions...")
     level_1 = get_google_suggestions(seed_keyword, country, language)
     suggestions.update(level_1)
+    status_placeholder.write(f"📊 Found {len(level_1)} first level suggestions")
     
+    # Level 2
+    status_placeholder.write("🔍 Fetching second level suggestions...")
     level_2 = []
-    for kw in level_1:
+    progress_bar = st.progress(0)
+    for i, kw in enumerate(level_1):
         level_2.extend(get_google_suggestions(kw, country, language))
+        progress = (i + 1) / len(level_1)
+        progress_bar.progress(progress)
+        status_placeholder.write(f"Processing: {kw}")
     suggestions.update(level_2)
+    status_placeholder.write(f"📊 Found {len(level_2)} second level suggestions")
     
+    # Level 3
+    status_placeholder.write("🔍 Fetching third level suggestions...")
     level_3 = []
-    for kw in level_2:
+    progress_bar = st.progress(0)
+    for i, kw in enumerate(level_2):
         level_3.extend(get_google_suggestions(kw, country, language))
+        progress = (i + 1) / len(level_2)
+        progress_bar.progress(progress)
+        status_placeholder.write(f"Processing: {kw}")
     suggestions.update(level_3)
+    status_placeholder.write(f"📊 Found {len(level_3)} third level suggestions")
     
+    # Modifier suggestions
+    status_placeholder.write("🔍 Fetching modifier suggestions...")
     modifier_suggestions = get_modifier_suggestions(seed_keyword)
-    for modifier in modifier_suggestions:
+    progress_bar = st.progress(0)
+    for i, modifier in enumerate(modifier_suggestions):
         suggestions.update(get_google_suggestions(modifier, country, language))
-
-    print(len(suggestions))
+        progress = (i + 1) / len(modifier_suggestions)
+        progress_bar.progress(progress)
+        status_placeholder.write(f"Processing: {modifier}")
+    
+    total_suggestions = len(suggestions)
+    status_placeholder.write(f"✅ Completed! Total unique suggestions found: {total_suggestions}")
     
     return list(suggestions)
 
