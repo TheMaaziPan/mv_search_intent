@@ -141,8 +141,8 @@ def get_google_suggestions(keyword, country, language, cache={}):
         'Upgrade-Insecure-Requests': '1',
     }
     
-    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
-    print(url)
+    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword + " "}&hl={language[0]}&gl={country[0]}"
+    #print(url)
 
     max_retries = 3
     retry_delay = 2  # seconds
@@ -156,6 +156,7 @@ def get_google_suggestions(keyword, country, language, cache={}):
             
             if response.status_code == 200:
                 suggestions = response.json()[1]
+                print(suggestions)
                 cache[cache_key] = suggestions
                 return suggestions
             elif response.status_code == 403:
