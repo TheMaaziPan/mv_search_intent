@@ -109,18 +109,26 @@ clustering_threshold = st.slider(
 
 def get_google_suggestions(keyword, country, language, cache={}):
     # Check if the result is already cached
-    cache_key = (keyword, country, language)
+    cache_key = (keyword, country[0], language[0])  # Extract country/language codes
     if cache_key in cache:
         return cache[cache_key]
     
-    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language}&gl={country}"
-    response = requests.get(url)
-    if response.status_code == 200:
-        suggestions = response.json()[1]
-        # Cache the result
-        cache[cache_key] = suggestions
-        return suggestions
-    return []
+    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
+    try:
+        response = requests.get(url)
+        if response.status_code == 200:
+            suggestions = response.json()[1]
+            # Cache the result
+            cache[cache_key] = suggestions
+            return suggestions
+        else:
+            st.error(f"Google API is blocking requests. Status code: {response.status_code}")
+            print(f"Error: Google API is blocking requests. Status code {response.status_code}")
+            return []
+    except Exception as e:
+        st.error(f"Error accessing Google Suggestions API: {str(e)}")
+        print(f"Error accessing Google Suggestions API: {str(e)}")
+        return []
 
 def get_modifier_suggestions(keyword):
     alphabet_modifiers = [f"{keyword} {chr(i)}" for i in range(97, 123)]
@@ -348,7 +356,7 @@ def expand_suggestions(seed_keyword, country, language):
     return list(suggestions)
 
 discord_webhook = st.secrets["discord_webhook"]
-print(discord_webhook)
+#print(discord_webhook)
 
 def send_discord_notification(message):
     
