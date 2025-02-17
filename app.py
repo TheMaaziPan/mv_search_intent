@@ -181,172 +181,53 @@ def get_modifier_suggestions(keyword):
     alphabet_modifiers = [f"{keyword} {chr(i)}" for i in range(97, 123)]
     number_modifiers = [f"{keyword} {i}" for i in range(0, 11)]
     question_modifiers = [
-        # How variations
-        f"how {keyword}", f"how can {keyword}", f"how does {keyword}", 
-        f"how should {keyword}", f"how would {keyword}", f"how did {keyword}", 
-        f"how might {keyword}", f"how could {keyword}", f"how will {keyword}", 
-        f"how is {keyword}", f"how has {keyword}", f"how would {keyword}", 
-        f"how could {keyword}", f"how should {keyword}", f"how often {keyword}",
-        f"how long {keyword}", f"how much {keyword}", f"how many {keyword}",
-        f"how far {keyword}", f"how come {keyword}", f"how soon {keyword}",
-        
-        # What variations
-        f"what {keyword}", f"what is {keyword}", f"what does {keyword}",
-        f"what can {keyword}", f"what are the {keyword}", f"what was the {keyword}",
-        f"what will be {keyword}", f"what should {keyword}", f"what could {keyword}",
-        f"what might {keyword}", f"what has been {keyword}", f"what would be {keyword}",
-        f"what could be {keyword}", f"what if {keyword}", f"what about {keyword}",
-        f"what makes {keyword}", f"what causes {keyword}", f"what happens if {keyword}",
-        
-        # Why variations
-        f"Why {keyword}", f"Why did {keyword}", f"Why can't {keyword}",
-        f"Why should {keyword}", f"Why would {keyword}", f"Why does {keyword}",
-        f"Why will {keyword}", f"Why might {keyword}", f"Why could {keyword}",
-        f"Why is {keyword}", f"Why hasn't {keyword}", f"Why wouldn't {keyword}",
-        f"Why couldn't {keyword}", f"Why should've {keyword}", f"Why do {keyword}",
-        f"Why are {keyword}", f"Why were {keyword}", f"Why was {keyword}",
-        
-        # Where variations
-        f"where {keyword}", f"where is {keyword}", f"where can {keyword}",
-        f"where do {keyword}", f"where are the {keyword}", f"where was {keyword}",
-        f"where will {keyword}", f"where should {keyword}", f"where could {keyword}",
-        f"where might {keyword}", f"where has {keyword}", f"where would {keyword}",
-        f"where could have {keyword}", f"where should have {keyword}", f"where did {keyword}",
-        f"where does {keyword}", f"where have {keyword}", f"where had {keyword}",
-        
-        # When variations
-        f"when {keyword}", f"when did {keyword}", f"when can {keyword}",
-        f"when will {keyword}", f"when was the {keyword}", f"when should {keyword}",
-        f"when could {keyword}", f"when might {keyword}", f"when does {keyword}",
-        f"when is {keyword}", f"when has {keyword}", f"when would {keyword}",
-        f"when could {keyword}", f"when should {keyword}", f"when was {keyword}",
-        f"when were {keyword}", f"when have {keyword}", f"when had {keyword}",
-        
-        # Which variations
-        f"which {keyword}", f"which is {keyword}", f"which are the {keyword}",
-        f"which was the {keyword}", f"which can {keyword}", f"which should {keyword}",
-        f"which would {keyword}", f"which could {keyword}", f"which might {keyword}",
-        f"which does {keyword}", f"which has been {keyword}", f"which would be {keyword}",
-        f"which could be {keyword}", f"which should be {keyword}", f"which one {keyword}",
-        f"which type {keyword}", f"which kind {keyword}", f"which category {keyword}",
-        
-        # Who variations
-        f"who {keyword}", f"who was {keyword}", f"who can {keyword}",
-        f"who will {keyword}", f"who has {keyword}", f"who does {keyword}",
-        f"who might {keyword}", f"who should {keyword}", f"who would {keyword}",
-        f"who could {keyword}", f"who has been {keyword}", f"who would have {keyword}",
-        f"who could have {keyword}", f"who is {keyword}", f"who are {keyword}",
-        f"who did {keyword}", f"who had {keyword}", f"who have {keyword}",
-        
-        # Can variations
-        f"Can {keyword}", f"Can you {keyword}", f"Can I {keyword}",
-        f"Can we {keyword}", f"Can they {keyword}", f"Can he {keyword}",
-        f"Can she {keyword}", f"Can it {keyword}", f"Can there {keyword}",
-        f"Can this {keyword}", f"Can there be {keyword}", f"Can this happen {keyword}",
-        f"Can anyone {keyword}", f"Can anything {keyword}", f"Can someone {keyword}",
-        
-        # Could variations
-        f"Could {keyword}", f"Could you {keyword}", f"Could we {keyword}",
-        f"Could I {keyword}", f"Could they {keyword}", f"Could he {keyword}",
-        f"Could she {keyword}", f"Could it {keyword}", f"Could there {keyword}",
-        f"Could this {keyword}", f"Could there be {keyword}", f"Could this happen {keyword}",
-        f"Could anyone {keyword}", f"Could anything {keyword}", f"Could someone {keyword}",
-        
-        # Should variations
-        f"Should {keyword}", f"Should you {keyword}", f"Should we {keyword}",
-        f"Should I {keyword}", f"Should they {keyword}", f"Should he {keyword}",
-        f"Should she {keyword}", f"Should it {keyword}", f"Should there {keyword}",
-        f"Should this {keyword}", f"Should you ever {keyword}", f"Should it ever {keyword}",
-        f"Should there ever {keyword}", f"Should anyone {keyword}", f"Should anything {keyword}",
-        f"Should someone {keyword}",
-        
-        # Would variations
-        f"Would {keyword}", f"Would you {keyword}", f"Would we {keyword}",
-        f"Would I {keyword}", f"Would they {keyword}", f"Would he {keyword}",
-        f"Would she {keyword}", f"Would it {keyword}", f"Would there {keyword}",
-        f"Would this {keyword}", f"Would you ever {keyword}", f"Would it ever {keyword}",
-        f"Would there ever {keyword}", f"Would anyone {keyword}", f"Would anything {keyword}",
-        f"Would someone {keyword}",
-        
-        # Do variations
-        f"Do {keyword}", f"Do you {keyword}", f"Do we {keyword}",
-        f"Do I {keyword}", f"Do they {keyword}", f"Do they have {keyword}",
-        f"Do you know {keyword}", f"Do we need {keyword}", f"Do I need {keyword}",
-        
-        # Does variations
-        f"Does {keyword}", f"Does it {keyword}", f"Does this {keyword}",
-        f"Does that {keyword}", f"Does he {keyword}", f"Does she {keyword}",
-        f"Does there {keyword}", f"Does anyone {keyword}", f"Does everybody {keyword}",
-        f"Does someone {keyword}", f"Does it ever {keyword}", f"Does this mean {keyword}",
-        f"Does that happen {keyword}", f"Does it work {keyword}", f"Does it matter {keyword}",
-        
-        # Did variations
-        f"Did {keyword}", f"Did you {keyword}", f"Did we {keyword}",
-        f"Did I {keyword}", f"Did they {keyword}", f"Did he {keyword}",
-        f"Did it {keyword}", f"Did there {keyword}", f"Did this {keyword}",
-        f"Did anyone {keyword}", f"Did anything {keyword}", f"Did someone {keyword}",
-        
-        # Are variations
-        f"Are {keyword}", f"Are you {keyword}", f"Are we {keyword}",
-        f"Are they {keyword}", f"Are there {keyword}", f"Are there any {keyword}",
-        f"Are you sure {keyword}", f"Are we ready {keyword}", f"Are they available {keyword}",
-        
-        # Is variations
-        f"Is {keyword}", f"Is it {keyword}", f"Is this {keyword}",
-        f"Is there {keyword}", f"Is that {keyword}", f"Is he {keyword}",
-        f"Is there a {keyword}", f"Is there any {keyword}", f"Is it possible {keyword}",
-        f"Is this true {keyword}", f"Is that correct {keyword}", f"Is he/she available {keyword}",
-        f"Is there a reason {keyword}", f"Is it necessary {keyword}", f"Is it worth {keyword}",
-        
-        # Was variations
-        f"Was {keyword}", f"Was it {keyword}", f"Was this {keyword}",
-        f"Was there {keyword}", f"Was that {keyword}", f"Was he {keyword}",
-        f"Was it possible {keyword}", f"Was there any {keyword}", f"Was it necessary {keyword}",
-        f"Was this known {keyword}", f"Was that the case {keyword}", f"Was he/she there {keyword}",
-        f"Was there a problem {keyword}", f"Was it worth {keyword}", f"Was it true {keyword}",
-        
-        # Have variations
-        f"Have {keyword}", f"Have there been {keyword}", f"Have there been changes {keyword}",
-        f"Have you seen {keyword}", f"Have we done {keyword}", f"Have they tried {keyword}",
-        
-        # Has variations
-        f"Has {keyword}", f"Has it {keyword}", f"Has this {keyword}",
-        f"Has that {keyword}", f"Has he {keyword}", f"Has she {keyword}",
-        f"Has there been {keyword}", f"Has it ever {keyword}", f"Has there ever been {keyword}",
-        f"Has anyone ever {keyword}", f"Has it changed {keyword}", f"Has this happened {keyword}",
-        f"Has that been {keyword}", f"Has it worked {keyword}", f"Has it mattered {keyword}",
-        
-        # Will variations
-        f"Will {keyword}", f"Will you {keyword}", f"Will we {keyword}",
-        f"Will they {keyword}", f"Will it {keyword}", f"Will he {keyword}",
-        f"Will she {keyword}", f"Will there {keyword}", f"Will there be {keyword}",
-        f"Will it work {keyword}", f"Will it matter {keyword}", f"Will it change {keyword}",
+        # Basic question modifiers
+        f"who {keyword}",
+        f"what {keyword}",
+        f"when {keyword}",
+        f"where {keyword}",
+        f"why {keyword}",
+        f"how {keyword}",
+        f"which {keyword}",
+        f"can {keyword}",
+        f"could {keyword}",
+        f"should {keyword}",
+        f"would {keyword}",
+        f"do {keyword}",
+        f"does {keyword}",
+        f"did {keyword}",
+        f"are {keyword}",
+        f"is {keyword}",
+        f"was {keyword}",
+        f"have {keyword}",
+        f"has {keyword}",
+        f"will {keyword}",
         
         # Other question starters
-        f"vs {keyword}", f"versus {keyword}", f"or {keyword}", f"and {keyword}", f"without {keyword}",
+        #f"vs {keyword}", f"versus {keyword}", f"or {keyword}", f"and {keyword}", f"without {keyword}",
         
         # Action-oriented
-        f"compare {keyword}", f"buy {keyword}", f"sell {keyword}",
-        f"find {keyword}", f"download {keyword}", f"install {keyword}",
-        f"fix {keyword}", f"repair {keyword}", f"solve {keyword}",
+        #f"compare {keyword}", f"buy {keyword}", f"sell {keyword}",
+        #f"find {keyword}", f"download {keyword}", f"install {keyword}",
+        #f"fix {keyword}", f"repair {keyword}", f"solve {keyword}",
         
         # Best/Top variations
-        f"best {keyword}", f"top {keyword}", f"cheapest {keyword}",
-        f"fastest {keyword}", f"easiest {keyword}", f"free {keyword}",
-        f"premium {keyword}", f"professional {keyword}", f"alternative {keyword}",
+        #f"best {keyword}", f"top {keyword}", f"cheapest {keyword}",
+        #f"fastest {keyword}", f"easiest {keyword}", f"free {keyword}",
+        #f"premium {keyword}", f"professional {keyword}", f"alternative {keyword}",
         
         # New variations
         # Time-related
-        f"today {keyword}", f"tomorrow {keyword}", f"yesterday {keyword}",
-        f"next week {keyword}", f"last year {keyword}", f"this month {keyword}",
+        #f"today {keyword}", f"tomorrow {keyword}", f"yesterday {keyword}",
+        #f"next week {keyword}", f"last year {keyword}", f"this month {keyword}",
         
         # Location-based
-        f"near me {keyword}", f"in my area {keyword}", f"local {keyword}",
-        f"nearby {keyword}", f"closest {keyword}", f"around here {keyword}",
+        #f"near me {keyword}", f"in my area {keyword}", f"local {keyword}",
+        #f"nearby {keyword}", f"closest {keyword}", f"around here {keyword}",
         
         # Comparison
-        f"better than {keyword}", f"worse than {keyword}", f"similar to {keyword}",
-        f"different from {keyword}", f"compared to {keyword}", f"as good as {keyword}"
+        #f"better than {keyword}", f"worse than {keyword}", f"similar to {keyword}",
+        #f"different from {keyword}", f"compared to {keyword}", f"as good as {keyword}"
     ]
     
     return alphabet_modifiers + number_modifiers + question_modifiers
