@@ -50,6 +50,8 @@ with st.sidebar:
 
 st.title("🔍 Search Intent Explorer")
 
+
+
 st.markdown("""
 Enter your target search query and market parameters below to discover high-value search intent patterns 
 and search query opportunities for your SEO strategy:
@@ -136,14 +138,14 @@ def get_google_suggestions(keyword, country, language, cache={}):
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
     
     max_retries = 3
-    retry_delay = 2  # seconds
+    retry_delay = 1  # Reduced from 2 seconds to 1 second
     
     for attempt in range(max_retries):
         try:
-            # Add a small random delay between requests
-            time.sleep(random.uniform(0.5, 1.5))
+            # Reduced random delay range
+            time.sleep(random.uniform(0.2, 0.8))
             
-            response = requests.get(url, headers=headers, timeout=10)
+            response = requests.get(url, headers=headers, timeout=5)  # Reduced timeout from 10 to 5 seconds
             
             if response.status_code == 200:
                 suggestions = response.json()[1]
