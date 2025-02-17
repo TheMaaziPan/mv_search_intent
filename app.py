@@ -141,7 +141,8 @@ def get_google_suggestions(keyword, country, language, cache={}):
     }
     
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
-    
+    print(url)
+
     max_retries = 3
     retry_delay = 2  # seconds
     
@@ -287,27 +288,38 @@ discord_webhook = st.secrets["discord_webhook"]
 #print(discord_webhook)
 
 def send_discord_notification(message):
-    
     webhook_url = discord_webhook
     
     if not webhook_url:
         print("Discord webhook URL not found in environment variables")
-        return
+        return False
         
     try:
+        # Clean up the message by removing extra indentation
+        cleaned_message = "\n".join(line.strip() for line in message.split("\n"))
+        
         payload = {
-            "content": message,
+            "content": cleaned_message,
             "username": "Search Intent Explorer Bot",
-            "avatar_url": "https://cdn-icons-png.flaticon.com/512/1998/1998342.png"  # Optional: bot avatar
+            "avatar_url": "https://cdn-icons-png.flaticon.com/512/1998/1998342.png"
         }
 
         response = requests.post(webhook_url, json=payload)
         
+        if response.status_code == 404:
+            print("Discord webhook not found - URL may be invalid")
+            return False
+        elif response.status_code == 429:
+            print("Rate limited by Discord")
+            return False
+            
         response.raise_for_status()
-        
         return True
-    except Exception as e:
+        
+    except requests.exceptions.RequestException as e:
         print(f"Failed to send Discord notification: {str(e)}")
+        print(f"Status code: {getattr(e.response, 'status_code', 'N/A')}")
+        print(f"Response text: {getattr(e.response, 'text', 'N/A')}")
         return False
 
 model = SentenceTransformer('all-MiniLM-L6-v2')
@@ -379,12 +391,17 @@ def export_to_excel(data):
 # Button to get suggestions
 if st.button("Get Suggestions"):
     if seed_keyword:
+        # Track time
+        # Track start time
+        start_time = time.time()
+        
         # Send initial notification when job starts
         start_notification = f"""
+        
         **New search analysis started**
         \nSearch Query: {seed_keyword}
-        \nCountry: {country[1]}  # Using country name instead of code
-        \nLanguage: {language[1]}  # Using language name instead of code
+        \nCountry: {country[1]}  
+        \nLanguage: {language[1]}
         \nClustering Threshold: {clustering_threshold}
         """
         send_discord_notification(start_notification)
@@ -407,20 +424,32 @@ if st.button("Get Suggestions"):
                 top_queries = "\n".join([f"- {query}" for query in suggestions[:5]])  # Show top 5 suggestions
                 
                 # Add more details to the notification message
-                notification_message = f"""
-                **New search analysis completed**
-                \nSearch Query: {seed_keyword}
-                \nCountry: {country}
-                \nLanguage: {language}
-                \nClustering Threshold: {clustering_threshold}
-                \nClusters found: {len(clusters)}
-                \nUnique Suggestions found: {len(suggestions)}
-                \nTop Clusters: {top_keywords}
-                \nCluster Details: {cluster_details}
-                \nTop Search Queries: {top_queries}
-                """
+                # Calculate duration
+                duration = time.time() - start_time
+                duration_mins = int(duration // 60)
+                duration_secs = int(duration % 60)
 
-                send_discord_notification(notification_message)
+
+                # Create a more concise notification message
+                notification_message = f"""**Search Analysis Complete**
+                • Query: {seed_keyword}
+                • Region: {country[1]} ({language[1]})
+                • Duration: {duration_mins}m {duration_secs}s
+                • Results: {len(suggestions)} suggestions in {len(clusters)} clusters
+                • Threshold: {clustering_threshold}
+
+                Top 3 Clusters:
+                {chr(10).join(f"• {label}" for label in list(cluster_labels.values())[:3])}"""
+
+                notification_message = str(notification_message)
+
+                # Add debug logging
+                print("Attempting to send Discord notification...")
+                notification_sent = send_discord_notification(notification_message)
+                if notification_sent:
+                    print("Discord notification sent successfully")
+                else:
+                    print("Failed to send Discord notification")
                 
                 excel_data = export_to_excel(data)
                 
