@@ -463,10 +463,10 @@ if st.button("Get Suggestions"):
                 
                 # Send success notification with more detailed data
                 cluster_details = "\n".join([f"- {label}: {len(terms)} terms" for label, terms in clusters.items()])
-                top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:5])  # Show top 5 cluster labels
+                top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:10])  # Show top 5 cluster labels
                 
                 # Add more details to the notification message
-                top_clusters = sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True)[:3]
+                top_clusters = sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True)[:10]
                 top_clusters_details = "\n".join(
                     [f"- {cluster_labels[cluster]}: {', '.join(terms)}" for cluster, terms in top_clusters]
                 )
