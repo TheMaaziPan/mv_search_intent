@@ -8,6 +8,8 @@ from sentence_transformers import SentenceTransformer
 from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from io import BytesIO
+import random
+import time
 
 st.set_page_config(
     layout="wide",
@@ -113,22 +115,60 @@ def get_google_suggestions(keyword, country, language, cache={}):
     if cache_key in cache:
         return cache[cache_key]
     
+    # List of different user agents to rotate through
+    user_agents = [
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0',
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36 Edg/91.0.864.59'
+    ]
+    
+    headers = {
+        'User-Agent': random.choice(user_agents),
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+        'DNT': '1',
+        'Connection': 'keep-alive',
+        'Upgrade-Insecure-Requests': '1',
+    }
+    
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
-    try:
-        response = requests.get(url)
-        if response.status_code == 200:
-            suggestions = response.json()[1]
-            # Cache the result
-            cache[cache_key] = suggestions
-            return suggestions
-        else:
-            st.error(f"Google API is blocking requests. Status code: {response.status_code}")
-            print(f"Error: Google API is blocking requests. Status code {response.status_code}")
-            return []
-    except Exception as e:
-        st.error(f"Error accessing Google Suggestions API: {str(e)}")
-        print(f"Error accessing Google Suggestions API: {str(e)}")
-        return []
+    
+    max_retries = 3
+    retry_delay = 2  # seconds
+    
+    for attempt in range(max_retries):
+        try:
+            # Add a small random delay between requests
+            time.sleep(random.uniform(0.5, 1.5))
+            
+            response = requests.get(url, headers=headers, timeout=10)
+            
+            if response.status_code == 200:
+                suggestions = response.json()[1]
+                cache[cache_key] = suggestions
+                return suggestions
+            elif response.status_code == 403:
+                if attempt < max_retries - 1:  # If not the last attempt
+                    time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
+                    continue
+                else:
+                    st.warning("Rate limit reached. Try again in a few minutes.")
+                    return []
+            else:
+                st.error(f"Unexpected status code: {response.status_code}")
+                return []
+                
+        except requests.exceptions.RequestException as e:
+            if attempt < max_retries - 1:
+                time.sleep(retry_delay * (attempt + 1))
+                continue
+            else:
+                st.error(f"Error accessing Google Suggestions API: {str(e)}")
+                return []
+    
+    return []
 
 def get_modifier_suggestions(keyword):
     alphabet_modifiers = [f"{keyword} {chr(i)}" for i in range(97, 123)]
