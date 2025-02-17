@@ -161,7 +161,7 @@ def get_google_suggestions(keyword, country, language, cache={}):
                     time.sleep(retry_delay * (attempt + 1))  # Exponential backoff
                     continue
                 else:
-                    st.warning("Rate limit reached. Try again in a few minutes.")
+                    st.warning(f"Rate limit reached while searching for '{keyword}'. Try again in a few minutes.")
                     return []
             else:
                 st.error(f"Unexpected status code: {response.status_code}")
