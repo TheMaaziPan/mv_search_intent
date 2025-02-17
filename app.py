@@ -9,77 +9,82 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from io import BytesIO
 
-st.set_page_config(
-    layout="wide",
-    page_title="🔍 Search Intent Explorer"
-)
+st.set_page_config(layout="wide")
+
+st.title("Search Intent Explorer")
 
 
-# Add informative sections to the sidebar
-with st.sidebar:
+# Add a new section explaining what the Search Intent Explorer is
+with st.expander("What is Search Intent Explorer?", expanded=True):
+    st.write("""
+    The Search Intent Explorer is a powerful tool designed to help you understand user search behavior. 
+    By analyzing search queries, it provides insights into what users are looking for, enabling you to create 
+    content that aligns with their intent. This tool can help you identify relevant keywords, develop 
+    content strategies, and improve your website's SEO performance.
+    """)
 
-    st.markdown("<h2 style='font-size:20px;'>🔗 Credits</h2>", unsafe_allow_html=True)
-    st.markdown("""
-    <p style='font-size:14px;'>Explore more about my work and insights:</p>
-    <ul style='font-size:14px;'>
-    <li>🌐 <a href='https://www.mihirnaik.com' target='_blank'>Visit my personal website</a></li>
-    <li>📰 <a href='https://mihirnaik.substack.com/' target='_blank'>Subscribe to my newsletter: SEO Workflow Automation</a></li>
-    </ul>
-    """, unsafe_allow_html=True)
+# Add a new section on how to use the tool
+with st.expander("How to Use It", expanded=True):
+    st.write("""
+    Follow these steps to get started:
+    1. **Enter a Seed Keyword**: Type a keyword that you want to explore.
+    2. **Select a Country and Language**: Choose the relevant country and language for your search.
+    3. **Get Suggestions**: Click the "Get Suggestions" button to fetch related search queries.
+    4. **View Clustered Results**: The tool will display clustered keywords based on user intent.
+    5. **Download Data**: You can download the results in an Excel file for further analysis.
+    """)
 
-    st.markdown("<h2 style='font-size:20px;'>🚀 Welcome to the Search Intent Explorer!</h2>", unsafe_allow_html=True)
-    st.markdown("""
-    <p style='font-size:14px;'>Enhance your SEO and content marketing with the Search Intent Explorer! 
-    Discover what your audience is truly searching for and create content that connects and ranks. 
-    Ideal for SEO managers and content marketers looking to increase online visibility and attract targeted traffic. 📈</p>
-    """, unsafe_allow_html=True)
-
-    st.markdown("<h2 style='font-size:20px;'>🛠️ How to Use the Tool</h2>", unsafe_allow_html=True)
-    st.markdown("""
-    <p style='font-size:14px;'>Get started in just a few steps:</p>
-    <ol style='font-size:14px;'>
-    <li><strong>🔍 Enter a Seed Search Query</strong>: Input a search query you wish to explore.</li>
-    <li><strong>🌍 Select a Country and Language</strong>: Tailor your search to specific regions and languages.</li>
-    <li><strong>💡 Get Suggestions</strong>: Hit the "Get Suggestions" button to generate related search queries.</li>
-    <li><strong>🔗 View Clustered Results</strong>: See how search queries are grouped by user intent for strategic insights.</li>
-    <li><strong>📥 Download Data</strong>: Export your findings in an Excel file for detailed analysis and reporting.</li>
-    </ol>
-    """, unsafe_allow_html=True)
-
-# Set the title of the Streamlit app
-st.title("🔍 Search Intent Explorer")
-
-# Provide a brief description of the app's purpose
+# Create a distinct section for input forms
+st.subheader("Search Intent Research Parameters")
 st.markdown("""
-Enter your target search query and market parameters below to discover high-value search intent patterns 
-and search query opportunities for your SEO strategy:
+Enter your target keyword and market parameters below to discover high-value search intent patterns 
+and keyword opportunities for your SEO strategy:
 """)
 
-# Create three columns for input fields
-col1, col2, col3 = st.columns(3)
+# Input fields for user interaction
+seed_keyword = st.text_input("Enter a seed keyword:", placeholder="e.g., digital marketing")
+country = st.selectbox(
+    label="Select a country:",
+    options=[
+        ("us", "United States"), ("ca", "Canada"), ("gb", "United Kingdom"), ("in", "India"), 
+        ("au", "Australia"), ("de", "Germany"), ("fr", "France"), ("es", "Spain"), ("it", "Italy"), 
+        ("nl", "Netherlands"), ("br", "Brazil"), ("mx", "Mexico"), ("ru", "Russia"), ("jp", "Japan"), 
+        ("kr", "South Korea"), ("cn", "China"), ("hk", "Hong Kong"), ("tw", "Taiwan"), 
+        ("sg", "Singapore"), ("my", "Malaysia"), ("th", "Thailand"), ("id", "Indonesia"), 
+        ("ph", "Philippines"), ("vn", "Vietnam"), ("za", "South Africa"), ("ng", "Nigeria"), 
+        ("eg", "Egypt"), ("sa", "Saudi Arabia"), ("ae", "United Arab Emirates"), ("tr", "Turkey"), 
+        ("pl", "Poland"), ("se", "Sweden"), ("no", "Norway"), ("dk", "Denmark"), ("fi", "Finland"), 
+        ("be", "Belgium"), ("ch", "Switzerland"), ("at", "Austria"), ("ie", "Ireland"), 
+        ("pt", "Portugal"), ("gr", "Greece"), ("cz", "Czech Republic"), ("hu", "Hungary"), 
+        ("ro", "Romania"), ("bg", "Bulgaria"), ("hr", "Croatia"), ("sk", "Slovakia"), 
+        ("si", "Slovenia"), ("lt", "Lithuania"), ("lv", "Latvia"), ("ee", "Estonia"), 
+        ("is", "Iceland"), ("mt", "Malta"), ("cy", "Cyprus"), ("lu", "Luxembourg")
+    ],
+    format_func=lambda x: x[1],
+    placeholder="Choose a country"
+)
 
-# Column 1: Input field for the seed search query
-with col1:
-    seed_keyword = st.text_input("🔑 Enter a seed search query:", placeholder="e.g., digital marketing")
+language = st.selectbox(
+    label="Select a language:",
+    options=[
+        ("en", "English"), ("fr", "French"), ("es", "Spanish"), ("de", "German"), ("it", "Italian"), 
+        ("nl", "Dutch"), ("pt", "Portuguese"), ("ru", "Russian"), ("ja", "Japanese"), ("ko", "Korean"), 
+        ("zh", "Chinese"), ("ar", "Arabic"), ("tr", "Turkish"), ("pl", "Polish"), ("sv", "Swedish"), 
+        ("no", "Norwegian"), ("da", "Danish"), ("fi", "Finnish"), ("el", "Greek"), ("cs", "Czech"), 
+        ("hu", "Hungarian"), ("ro", "Romanian"), ("bg", "Bulgarian"), ("hr", "Croatian"), 
+        ("sk", "Slovak"), ("sl", "Slovenian"), ("lt", "Lithuanian"), ("lv", "Latvian"), 
+        ("et", "Estonian"), ("is", "Icelandic"), ("mt", "Maltese"), ("cy", "Cypriot"), ("ga", "Irish")
+    ],
+    format_func=lambda x: x[1],
+    placeholder="Choose a language"
+)
 
-# Column 2: Dropdown for selecting a country
-with col2:
-    country = st.selectbox("Select a country:", ["us", "ca", "gb", "in", "au", "de", "fr", "es", "it", "nl"])
-
-
-# Column 3: Dropdown for selecting a language
-with col3:
-    language = st.selectbox("Select a language:", ["en", "fr", "es", "de", "it", "nl"])  
-
-# Slider to adjust the clustering threshold
 clustering_threshold = st.slider(
-    """🔧 Optimize Clustering Precision:
-    \n Fine-tune the distance threshold to define the granularity of search query groupings. 
-    \n Lower values yield more specific clusters, ideal for targeting niche search intents, while higher values create broader clusters for general insights.""", 
-    min_value=0.1,  # Minimum value for the slider
-    max_value=1.5,  # Maximum value for the slider
-    value=0.5,      # Default value for the slider
-    step=0.1        # Step size for the slider
+    "Set Clustering Precision: Adjust the distance threshold to control how closely related search queries are grouped together. Lower values create more clusters with tighter groupings, while higher values result in fewer, broader clusters.", 
+    min_value=0.1, 
+    max_value=1.5, 
+    value=0.5, 
+    step=0.1
 )
 
 def get_google_suggestions(keyword, country, language, cache={}):
@@ -376,15 +381,15 @@ def generate_cluster_labels(clusters, embeddings, suggestions):
 def visualize_clusters(clusters, cluster_labels):
     data = []
     for cluster, items in clusters.items():
-        if len(items) > 1:  # Only include clusters with more than one search query
+        if len(items) > 1:  # Only include clusters with more than one keyword
             for item in items:
-                data.append({"Cluster": cluster_labels[cluster], "Search Query": item})
+                data.append({"Cluster": cluster_labels[cluster], "Keyword": item})
     
     # Create a clean and minimal treemap
     fig = px.treemap(
         data, 
-        path=["Cluster", "Search Query"],
-        title="Search Query Clusters",
+        path=["Cluster", "Keyword"],
+        title="Keyword Clusters",
         height=900,
         color_discrete_sequence=px.colors.qualitative.Pastel,
     )
@@ -412,7 +417,7 @@ def export_to_excel(data):
     df = pd.DataFrame(data)
     output = BytesIO()
     with pd.ExcelWriter(output, engine='xlsxwriter') as writer:
-        df.to_excel(writer, sheet_name='Clustered Search Queries', index=False)
+        df.to_excel(writer, sheet_name='Clustered Keywords', index=False)
     return output.getvalue()
 
 # Button to get suggestions
@@ -427,7 +432,7 @@ if st.button("Get Suggestions"):
                 clusters, embeddings = cluster_suggestions(suggestions, clustering_threshold)
                 progress_bar.progress(1.0)  # Complete the progress bar
                 cluster_labels = generate_cluster_labels(clusters, embeddings, suggestions)
-                st.write("### Clustered Search Query Results:")
+                st.write("### Clustered Google Auto Suggest Results:")
                 data = visualize_clusters(clusters, cluster_labels)
                 
                 # Send success notification with more detailed data
@@ -435,20 +440,15 @@ if st.button("Get Suggestions"):
                 top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:5])  # Show top 5 cluster labels
                 
                 # Add more details to the notification message
-                top_clusters = sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True)[:10]
-                top_clusters_details = "\n".join(
-                    [f"- {cluster_labels[cluster]}: {', '.join(terms)}" for cluster, terms in top_clusters]
-                )
                 notification_message = f"""
                 **New search analysis completed**
-                \nSearch Query: {seed_keyword}
+                \nKeyword: {seed_keyword}
                 \nCountry: {country}
                 \nLanguage: {language}
                 \nClustering Threshold: {clustering_threshold}
                 \nClusters found: {len(clusters)}
                 \nUnique Suggestions found: {len(suggestions)}
-                \nTop 3 Clusters:
-                {top_clusters_details}
+                \nTop Keywords: {top_keywords}  # Add top keywords to the notification message
                 """
 
                 send_discord_notification(notification_message)
@@ -458,12 +458,12 @@ if st.button("Get Suggestions"):
                 st.download_button(
                     label="Download Excel File",
                     data=excel_data,
-                    file_name="clustered_search_queries.xlsx",
+                    file_name="clustered_keywords.xlsx",
                     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
                 )
             else:
                 # Send empty result notification
-                send_discord_notification(f"Search analysis failed - No suggestions found for search query: {seed_keyword}")
+                send_discord_notification(f"Search analysis failed - No suggestions found for keyword: {seed_keyword}")
                 st.write("No suggestions found.")
     else:
-        st.warning("Please enter a seed search query.")
+        st.warning("Please enter a seed keyword.")
