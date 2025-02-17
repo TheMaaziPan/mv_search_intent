@@ -10,6 +10,7 @@ from sklearn.metrics.pairwise import cosine_similarity
 from io import BytesIO
 import random
 import time
+import umap.umap_ as umap 
 
 st.set_page_config(
     layout="wide",
@@ -347,25 +348,76 @@ def generate_cluster_labels(clusters, embeddings, suggestions):
     return labels
 
 def visualize_clusters(clusters, cluster_labels):
+    # Create data for visualization
     data = []
     for cluster, items in clusters.items():
         if len(items) > 1:  # Only include clusters with more than one search query
             for item in items:
-                data.append({"Cluster": cluster_labels[cluster], "Search Query": item})
+                data.append({
+                    "Cluster": cluster_labels[cluster], 
+                    "Search Query": item,
+                    "Cluster_ID": cluster  # Add this for color mapping
+                })
     
-    # Create a clean and minimal treemap
-    fig = px.treemap(
-        data, 
-        path=["Cluster", "Search Query"],
-        title="Search Query Clusters",
-        height=900,
-        color_discrete_sequence=px.colors.qualitative.Pastel,
+    # Create scatter plot data
+    df = pd.DataFrame(data)
+    
+    # Get top 10 clusters by size
+    cluster_sizes = df['Cluster'].value_counts()
+    top_10_clusters = cluster_sizes.head(10).index.tolist()
+    
+    # Filter dataframe for top 10 clusters
+    df_top_10 = df[df['Cluster'].isin(top_10_clusters)]
+    
+    # Get embeddings for filtered queries
+    top_10_queries = df_top_10["Search Query"].tolist()
+    embeddings_2d = umap.UMAP(n_components=2, random_state=42).fit_transform(
+        model.encode(top_10_queries)
     )
-
-    # Display the plot
-    st.plotly_chart(fig, use_container_width=True)
     
-    # Display the data in an interactive table with the specified columns
+    # Add 2D coordinates to filtered dataframe
+    df_top_10["x"] = embeddings_2d[:, 0]
+    df_top_10["y"] = embeddings_2d[:, 1]
+    
+    # Create scatter plot with filtered data
+    scatter_fig = px.scatter(
+        df_top_10,
+        x="x",
+        y="y",
+        color="Cluster",
+        hover_data=["Search Query"],
+        title="Top 10 Largest Search Query Clusters Visualization",
+        labels={"x": "", "y": ""},
+        #color_discrete_sequence=px.colors.qualitative.Set3
+    )
+    
+    # Update scatter plot layout
+    scatter_fig.update_traces(marker=dict(size=8))
+    scatter_fig.update_layout(
+        plot_bgcolor="white",
+        showlegend=True,
+        legend_title_text="Clusters"
+    )
+    
+    # Create and display visualizations
+    st.write("### Cluster Visualizations")
+    
+    # Create treemap
+    treemap_fig = px.treemap(
+        df, 
+        path=["Cluster", "Search Query"],
+        title="Search Query Clusters Treemap",
+        height=600,
+        color_discrete_sequence=px.colors.qualitative.Set3,
+    )
+    
+    # Display treemap
+    st.plotly_chart(treemap_fig, use_container_width=True)
+
+    # Display scatter plot
+    st.plotly_chart(scatter_fig, use_container_width=True)
+    
+    # Display the data in an interactive table
     st.write("### Interactive Table of Clusters")
     cluster_data = [
         {
@@ -375,11 +427,9 @@ def visualize_clusters(clusters, cluster_labels):
         }
         for cluster, items in clusters.items()
     ]
-    df = pd.DataFrame(cluster_data)
-    df_sorted = df.sort_values(by="Number of Search Queries in a Cluster", ascending=False)
+    df_table = pd.DataFrame(cluster_data)
+    df_sorted = df_table.sort_values(by="Number of Search Queries in a Cluster", ascending=False)
     st.dataframe(df_sorted)
-    
-    return data
 
 def export_to_excel(data):
     df = pd.DataFrame(data)
