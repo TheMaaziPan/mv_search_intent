@@ -138,14 +138,14 @@ def get_google_suggestions(keyword, country, language, cache={}):
     url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword}&hl={language[0]}&gl={country[0]}"
     
     max_retries = 3
-    retry_delay = 1  # Reduced from 2 seconds to 1 second
+    retry_delay = 2  # seconds
     
     for attempt in range(max_retries):
         try:
-            # Reduced random delay range
-            time.sleep(random.uniform(0.2, 0.8))
+            # Add a small random delay between requests
+            time.sleep(random.uniform(0.5, 1.5))
             
-            response = requests.get(url, headers=headers, timeout=5)  # Reduced timeout from 10 to 5 seconds
+            response = requests.get(url, headers=headers, timeout=10)
             
             if response.status_code == 200:
                 suggestions = response.json()[1]
