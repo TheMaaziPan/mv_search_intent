@@ -5,3 +5,4 @@ sentence-transformers
 plotly-express
 plotly
 xlsxwriter
+umap-learn==0.5.5
