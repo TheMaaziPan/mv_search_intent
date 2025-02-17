@@ -1,7 +1,10 @@
-streamlit==1.42.0
-scikit-learn==1.6.1
+streamlit
+requests
 numpy
-sentence-transformers
-plotly-express
+collections
 plotly
+pandas
+sentence-transformers
+scikit-learn
+openpyxl
 xlsxwriter
