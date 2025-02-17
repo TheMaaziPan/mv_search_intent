@@ -22,8 +22,8 @@ with st.sidebar:
     st.markdown("""
     <p style='font-size:14px;'>Explore more about my work and insights:</p>
     <ul style='font-size:14px;'>
-    <li><a href='https://www.mihirnaik.com' target='_blank'>Visit my personal website</a></li>
-    <li><a href='https://mihirnaik.substack.com/' target='_blank'>Subscribe to my newsletter: SEO Workflow Automation</a></li>
+    <li>🌐 <a href='https://www.mihirnaik.com' target='_blank'>Visit my personal website</a></li>
+    <li>📰 <a href='https://mihirnaik.substack.com/' target='_blank'>Subscribe to my newsletter: SEO Workflow Automation</a></li>
     </ul>
     """, unsafe_allow_html=True)
 
@@ -46,19 +46,23 @@ with st.sidebar:
     </ol>
     """, unsafe_allow_html=True)
 
+# Set the title of the Streamlit app
 st.title("🔍 Search Intent Explorer")
 
+# Provide a brief description of the app's purpose
 st.markdown("""
 Enter your target search query and market parameters below to discover high-value search intent patterns 
 and search query opportunities for your SEO strategy:
 """)
 
-# Input fields for user interaction in a single line
+# Create three columns for input fields
 col1, col2, col3 = st.columns(3)
 
+# Column 1: Input field for the seed search query
 with col1:
     seed_keyword = st.text_input("🔑 Enter a seed search query:", placeholder="e.g., digital marketing")
 
+# Column 2: Dropdown for selecting a country
 with col2:
     country = st.selectbox(
         label="🌍 Select a country:",
@@ -77,10 +81,11 @@ with col2:
             ("si", "Slovenia"), ("lt", "Lithuania"), ("lv", "Latvia"), ("ee", "Estonia"), 
             ("is", "Iceland"), ("mt", "Malta"), ("cy", "Cyprus"), ("lu", "Luxembourg")
         ],
-        format_func=lambda x: x[1],
+        format_func=lambda x: x[1],  # Display the country name instead of the code
         placeholder="Choose a country"
     )
 
+# Column 3: Dropdown for selecting a language
 with col3:
     language = st.selectbox(
         label="🗣️ Select a language:",
@@ -93,18 +98,19 @@ with col3:
             ("sk", "Slovak"), ("sl", "Slovenian"), ("lt", "Lithuanian"), ("lv", "Latvian"), 
             ("et", "Estonian"), ("is", "Icelandic"), ("mt", "Maltese"), ("cy", "Cypriot"), ("ga", "Irish")
         ],
-        format_func=lambda x: x[1],
+        format_func=lambda x: x[1],  # Display the language name instead of the code
         placeholder="Choose a language"
     )
 
+# Slider to adjust the clustering threshold
 clustering_threshold = st.slider(
     """🔧 Optimize Clustering Precision:
     \n Fine-tune the distance threshold to define the granularity of search query groupings. 
     \n Lower values yield more specific clusters, ideal for targeting niche search intents, while higher values create broader clusters for general insights.""", 
-    min_value=0.1, 
-    max_value=1.5, 
-    value=0.5, 
-    step=0.1
+    min_value=0.1,  # Minimum value for the slider
+    max_value=1.5,  # Maximum value for the slider
+    value=0.5,      # Default value for the slider
+    step=0.1        # Step size for the slider
 )
 
 def get_google_suggestions(keyword, country, language, cache={}):
@@ -460,6 +466,10 @@ if st.button("Get Suggestions"):
                 top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:5])  # Show top 5 cluster labels
                 
                 # Add more details to the notification message
+                top_clusters = sorted(clusters.items(), key=lambda x: len(x[1]), reverse=True)[:3]
+                top_clusters_details = "\n".join(
+                    [f"- {cluster_labels[cluster]}: {', '.join(terms)}" for cluster, terms in top_clusters]
+                )
                 notification_message = f"""
                 **New search analysis completed**
                 \nSearch Query: {seed_keyword}
@@ -468,7 +478,8 @@ if st.button("Get Suggestions"):
                 \nClustering Threshold: {clustering_threshold}
                 \nClusters found: {len(clusters)}
                 \nUnique Suggestions found: {len(suggestions)}
-                \nTop Search Queries: {top_keywords}  # Add top search queries to the notification message
+                \nTop 3 Clusters:
+                {top_clusters_details}
                 """
 
                 send_discord_notification(notification_message)
