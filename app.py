@@ -9,9 +9,10 @@ from sklearn.cluster import AgglomerativeClustering
 from sklearn.metrics.pairwise import cosine_similarity
 from io import BytesIO
 
-st.set_page_config(layout="wide")
-
-
+st.set_page_config(
+    layout="wide",
+    page_title="🔍 Search Intent Explorer"
+)
 
 
 # Add informative sections to the sidebar
