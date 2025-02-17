@@ -64,43 +64,12 @@ with col1:
 
 # Column 2: Dropdown for selecting a country
 with col2:
-    country = st.selectbox(
-        label="🌍 Select a country:",
-        options=[
-            ("us", "United States"), ("ca", "Canada"), ("gb", "United Kingdom"), ("in", "India"), 
-            ("au", "Australia"), ("de", "Germany"), ("fr", "France"), ("es", "Spain"), ("it", "Italy"), 
-            ("nl", "Netherlands"), ("br", "Brazil"), ("mx", "Mexico"), ("ru", "Russia"), ("jp", "Japan"), 
-            ("kr", "South Korea"), ("cn", "China"), ("hk", "Hong Kong"), ("tw", "Taiwan"), 
-            ("sg", "Singapore"), ("my", "Malaysia"), ("th", "Thailand"), ("id", "Indonesia"), 
-            ("ph", "Philippines"), ("vn", "Vietnam"), ("za", "South Africa"), ("ng", "Nigeria"), 
-            ("eg", "Egypt"), ("sa", "Saudi Arabia"), ("ae", "United Arab Emirates"), ("tr", "Turkey"), 
-            ("pl", "Poland"), ("se", "Sweden"), ("no", "Norway"), ("dk", "Denmark"), ("fi", "Finland"), 
-            ("be", "Belgium"), ("ch", "Switzerland"), ("at", "Austria"), ("ie", "Ireland"), 
-            ("pt", "Portugal"), ("gr", "Greece"), ("cz", "Czech Republic"), ("hu", "Hungary"), 
-            ("ro", "Romania"), ("bg", "Bulgaria"), ("hr", "Croatia"), ("sk", "Slovakia"), 
-            ("si", "Slovenia"), ("lt", "Lithuania"), ("lv", "Latvia"), ("ee", "Estonia"), 
-            ("is", "Iceland"), ("mt", "Malta"), ("cy", "Cyprus"), ("lu", "Luxembourg")
-        ],
-        format_func=lambda x: x[1],  # Display the country name instead of the code
-        placeholder="Choose a country"
-    )
+    country = st.selectbox("Select a country:", ["us", "ca", "gb", "in", "au", "de", "fr", "es", "it", "nl"])
+
 
 # Column 3: Dropdown for selecting a language
 with col3:
-    language = st.selectbox(
-        label="🗣️ Select a language:",
-        options=[
-            ("en", "English"), ("fr", "French"), ("es", "Spanish"), ("de", "German"), ("it", "Italian"), 
-            ("nl", "Dutch"), ("pt", "Portuguese"), ("ru", "Russian"), ("ja", "Japanese"), ("ko", "Korean"), 
-            ("zh", "Chinese"), ("ar", "Arabic"), ("tr", "Turkish"), ("pl", "Polish"), ("sv", "Swedish"), 
-            ("no", "Norwegian"), ("da", "Danish"), ("fi", "Finnish"), ("el", "Greek"), ("cs", "Czech"), 
-            ("hu", "Hungarian"), ("ro", "Romanian"), ("bg", "Bulgarian"), ("hr", "Croatian"), 
-            ("sk", "Slovak"), ("sl", "Slovenian"), ("lt", "Lithuanian"), ("lv", "Latvian"), 
-            ("et", "Estonian"), ("is", "Icelandic"), ("mt", "Maltese"), ("cy", "Cypriot"), ("ga", "Irish")
-        ],
-        format_func=lambda x: x[1],  # Display the language name instead of the code
-        placeholder="Choose a language"
-    )
+    language = st.selectbox("Select a language:", ["en", "fr", "es", "de", "it", "nl"])  
 
 # Slider to adjust the clustering threshold
 clustering_threshold = st.slider(
