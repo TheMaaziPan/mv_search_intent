@@ -50,6 +50,11 @@ with st.sidebar:
 
 st.title("🔍 Search Intent Explorer")
 
+st.warning("""
+⏳ **Please Note**: To ensure reliable data collection and comply with API rate limits, reports now take around 5 minutes to complete.
+
+This slight delay allows us to gather more comprehensive and accurate search intent data while avoiding API throttling. Feel free to grab a coffee while we prepare your detailed search analysis! ☕
+""")
 
 
 st.markdown("""
@@ -493,6 +498,16 @@ def export_to_excel(data):
 # Button to get suggestions
 if st.button("Get Suggestions"):
     if seed_keyword:
+        # Send initial notification when job starts
+        start_notification = f"""
+        **New search analysis started**
+        \nSearch Query: {seed_keyword}
+        \nCountry: {country[1]}  # Using country name instead of code
+        \nLanguage: {language[1]}  # Using language name instead of code
+        \nClustering Threshold: {clustering_threshold}
+        """
+        send_discord_notification(start_notification)
+
         with st.spinner('Fetching and analyzing suggestions... Please wait.'):
             suggestions = expand_suggestions(seed_keyword, country, language)
             if suggestions:
@@ -508,6 +523,7 @@ if st.button("Get Suggestions"):
                 # Send success notification with more detailed data
                 cluster_details = "\n".join([f"- {label}: {len(terms)} terms" for label, terms in clusters.items()])
                 top_keywords = "\n".join([f"- {label}" for label in cluster_labels.values()][:5])  # Show top 5 cluster labels
+                top_queries = "\n".join([f"- {query}" for query in suggestions[:5]])  # Show top 5 suggestions
                 
                 # Add more details to the notification message
                 notification_message = f"""
@@ -518,7 +534,9 @@ if st.button("Get Suggestions"):
                 \nClustering Threshold: {clustering_threshold}
                 \nClusters found: {len(clusters)}
                 \nUnique Suggestions found: {len(suggestions)}
-                \nTop Search Queries: {top_keywords}  # Add top search queries to the notification message
+                \nTop Clusters: {top_keywords}
+                \nCluster Details: {cluster_details}
+                \nTop Search Queries: {top_queries}
                 """
 
                 send_discord_notification(notification_message)
