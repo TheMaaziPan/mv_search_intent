@@ -141,7 +141,7 @@ def get_google_suggestions(keyword, country, language, cache={}):
         'Upgrade-Insecure-Requests': '1',
     }
     
-    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword + " "}&hl={language[0]}&gl={country[0]}"
+    url = f"http://suggestqueries.google.com/complete/search?client=firefox&q={keyword + ' '}&hl={language[0]}&gl={country[0]}"
     #print(url)
 
     max_retries = 3
