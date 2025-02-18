@@ -53,8 +53,8 @@ def save_search_results(seed_keyword, country, language, suggestions, clusters, 
         "total_suggestions": len(suggestions),
         "total_clusters": len(clusters),
         "suggestions": suggestions,
-        "clusters": {str(k): v for k, v in clusters.items()},
-        "cluster_labels": {str(k): v for k, v in cluster_labels.items()},
+        #"clusters": {str(k): v for k, v in clusters.items()},
+        #"cluster_labels": {str(k): v for k, v in cluster_labels.items()},
         "clusters_data": clusters_data
     }
     
