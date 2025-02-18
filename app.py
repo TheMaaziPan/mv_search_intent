@@ -12,6 +12,58 @@ import random
 import time
 import umap.umap_ as umap 
 
+
+import pymongo
+from datetime import datetime
+from bson import ObjectId
+
+
+mongodb_url = st.secrets["mongodb_uri"]
+client = pymongo.MongoClient(mongodb_url)
+
+# Initialize database connection
+db = client["search-intent-explorer"]
+
+print(db)
+
+# Define collections
+searches_collection = db["searches"]
+
+def save_search_results(seed_keyword, country, language, suggestions, clusters, cluster_labels):
+    """Save search results to MongoDB"""
+
+    # Prepare cluster data array
+    clusters_data = []
+    for cluster_id, queries in clusters.items():
+        clusters_data.append({
+            "cluster_id": str(cluster_id),
+            "cluster_label": cluster_labels.get(cluster_id),
+            "queries": queries,
+            "size": len(queries)
+        })
+
+
+    # Create single document with all data
+    search_data = {
+        "timestamp": datetime.utcnow(),
+        "seed_keyword": seed_keyword,
+        "country": country[1],
+        "language": language[1],
+        "total_suggestions": len(suggestions),
+        "total_clusters": len(clusters),
+        "suggestions": suggestions,
+        "clusters": {str(k): v for k, v in clusters.items()},
+        "cluster_labels": {str(k): v for k, v in cluster_labels.items()},
+        "clusters_data": clusters_data
+    }
+    
+    # Save to searches collection
+    search_result = searches_collection.insert_one(search_data)
+    
+    return search_result
+
+
+
 st.set_page_config(
     layout="wide",
     page_title="🔍 Search Intent Explorer"
@@ -466,6 +518,18 @@ if st.button("Get Suggestions"):
                 clusters, embeddings = cluster_suggestions(suggestions, clustering_threshold)
                 progress_bar.progress(1.0)  # Complete the progress bar
                 cluster_labels = generate_cluster_labels(clusters, embeddings, suggestions)
+
+                # Save results to MongoDB
+                search_id = save_search_results(
+                    seed_keyword, 
+                    country, 
+                    language, 
+                    suggestions, 
+                    clusters, 
+                    cluster_labels
+                )
+
+
                 st.write("### Clustered Search Query Results:")
                 data = visualize_clusters(clusters, cluster_labels)
                 
@@ -516,3 +580,13 @@ if st.button("Get Suggestions"):
                 st.write("No suggestions found.")
     else:
         st.warning("Please enter a seed search query.")
+
+
+recent_searches = searches_collection.find().sort("timestamp", -1).limit(10)
+
+for search in recent_searches:
+    with st.expander(f"🔍 {search['seed_keyword']} - {search['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"):
+        st.write(f"Country: {search['country']}")
+        st.write(f"Language: {search['language']}")
+        st.write(f"Total Suggestions: {search['total_suggestions']}")
+        st.write(f"Total Clusters: {search['total_clusters']}")
