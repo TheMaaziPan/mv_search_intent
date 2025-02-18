@@ -13,6 +13,7 @@ import time
 import umap.umap_ as umap 
 
 
+
 import pymongo
 from datetime import datetime
 from bson import ObjectId
@@ -586,24 +587,72 @@ recent_searches = searches_collection.find().sort("timestamp", -1).limit(10)
 
 st.subheader("Recent Searches")
 
-for search in recent_searches:
-    with st.expander(f"### 🔍 {search['seed_keyword']} - {search['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"):
-        st.write(f"Country: {search['country']}")
-        st.write(f"Language: {search['language']}")
-        st.write(f"Total Suggestions: {search['total_suggestions']}")
-        st.write(f"Total Clusters: {search['total_clusters']}")
-        
-        # Add sample cluster data
-        st.write("Largest Clusters:")
+st.markdown("### 📊 Recent Search Analysis")
+st.markdown("Explore the latest search intent analyses performed by users:")
 
-        # Sort clusters by size in descending order and get top 3
+for search in recent_searches:
+    # Create a clean timestamp
+    timestamp = search['timestamp'].strftime('%B %d, %Y at %I:%M %p')
+    
+    # Create a more visually appealing expander header
+    expander_header = f"""🔍 **{search['seed_keyword']}**
+    \n*{search['country']} • {timestamp}*"""
+    
+    with st.expander(expander_header):
+        # Create three columns for key metrics
+        col1, col2, col3 = st.columns(3)
+        
+        with col1:
+            st.metric(
+                "Total Suggestions",
+                f"{search['total_suggestions']:,}",
+                delta=None,
+                help="Number of unique search queries found"
+            )
+        
+        with col2:
+            st.metric(
+                "Total Clusters",
+                f"{search['total_clusters']:,}",
+                delta=None,
+                help="Number of distinct intent groups identified"
+            )
+            
+        with col3:
+            st.metric(
+                "Language",
+                search['language'],
+                delta=None,
+                help="Search market language"
+            )
+        
+        # Add a divider
+        st.markdown("---")
+        
+        # Display top clusters section
+        st.markdown("#### 🎯 Top Search Intent Clusters")
+        
+        # Sort and get top 3 clusters
         sorted_clusters = sorted(search['clusters_data'], 
                                key=lambda x: x['size'], 
                                reverse=True)[:3]
-
+        
+        # Display each cluster in a card-like format
         for cluster_data in sorted_clusters:
-            st.markdown(f"##### 📑 {cluster_data['cluster_label']} ({cluster_data['size']} queries)")
-            # Display the queries as a bulleted list
-            for query in cluster_data['queries']:
+            st.markdown(f"""
+            <div style='padding: 10px; border-radius: 5px; margin-bottom: 10px;'>
+                <h5>📑 {cluster_data['cluster_label']} ({cluster_data['size']} queries)</h5>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # Display top 5 queries from each cluster
+            top_queries = cluster_data['queries'][:5]
+            for query in top_queries:
                 st.markdown(f"• {query}")
+            
+            # If there are more queries, show a count of hidden ones
+            if len(cluster_data['queries']) > 5:
+                remaining = len(cluster_data['queries']) - 5
+                st.markdown(f"*...and {remaining} more queries*")
+            
             st.markdown("---")
