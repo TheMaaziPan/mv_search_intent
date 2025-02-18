@@ -104,13 +104,6 @@ with st.sidebar:
 
 st.title("🔍 Search Intent Explorer")
 
-st.warning("""
-⏳ **Please Note**: To ensure reliable data collection and comply with API rate limits, reports now take around 5 minutes to complete.
-
-This slight delay allows us to gather more comprehensive and accurate search intent data while avoiding API throttling. Feel free to grab a coffee while we prepare your detailed search analysis! ☕
-""")
-
-
 st.markdown("""
 Enter your target search query and market parameters below to discover high-value search intent patterns 
 and search query opportunities for your SEO strategy:
@@ -592,7 +585,7 @@ st.markdown("Explore the latest search intent analyses performed by users:")
 
 for search in recent_searches:
     # Create a clean timestamp
-    timestamp = search['timestamp'].strftime('%B %d, %Y at %I:%M %p')
+    timestamp = search['timestamp'].strftime('%B %d, %Y at %I:%M %p UTC')  # Added UTC
     
     # Create a more visually appealing expander header
     expander_header = f"""🔍 **{search['seed_keyword']}**
