@@ -6,3 +6,6 @@ plotly-express
 plotly
 xlsxwriter
 umap-learn==0.5.5
+requests
+pandas
+pymongo
