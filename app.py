@@ -584,9 +584,26 @@ if st.button("Get Suggestions"):
 
 recent_searches = searches_collection.find().sort("timestamp", -1).limit(10)
 
+st.subheader("Recent Searches")
+
 for search in recent_searches:
-    with st.expander(f"🔍 {search['seed_keyword']} - {search['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"):
+    with st.expander(f"### 🔍 {search['seed_keyword']} - {search['timestamp'].strftime('%Y-%m-%d %H:%M:%S')}"):
         st.write(f"Country: {search['country']}")
         st.write(f"Language: {search['language']}")
         st.write(f"Total Suggestions: {search['total_suggestions']}")
         st.write(f"Total Clusters: {search['total_clusters']}")
+        
+        # Add sample cluster data
+        st.write("Largest Clusters:")
+
+        # Sort clusters by size in descending order and get top 3
+        sorted_clusters = sorted(search['clusters_data'], 
+                               key=lambda x: x['size'], 
+                               reverse=True)[:3]
+
+        for cluster_data in sorted_clusters:
+            st.markdown(f"##### 📑 {cluster_data['cluster_label']} ({cluster_data['size']} queries)")
+            # Display the queries as a bulleted list
+            for query in cluster_data['queries']:
+                st.markdown(f"• {query}")
+            st.markdown("---")
